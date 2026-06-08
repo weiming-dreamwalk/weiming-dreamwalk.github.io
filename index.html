@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>未名游梦</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game-shell" aria-label="选关地图">
+      <section class="loading-screen is-visible" id="loadingScreen" aria-label="资源加载">
+        <div class="loading-panel">
+          <strong>未名游梦</strong>
+          <span id="loadingText">正在载入梦境 0%</span>
+          <div class="loading-track" aria-hidden="true">
+            <i id="loadingBar"></i>
+          </div>
+        </div>
+      </section>
+      <section class="title-page" id="titlePage" aria-label="游戏进入页面" hidden>
+        <img class="title-logo" src="./assets/titlepage/logo.png" alt="未名梦行" draggable="false" />
+        <img class="title-cards" src="./assets/titlepage/cards.png" alt="" draggable="false" />
+        <img class="title-hands" src="./assets/titlepage/hands.png" alt="" draggable="false" />
+        <button class="title-enter" id="titleEnter" type="button">单击进入游戏</button>
+      </section>
+      <div class="map-stage" id="mapStage">
+        <div class="map-relic-mount" id="mapRelicMount"></div>
+        <div class="map-normal" aria-hidden="true"></div>
+        <svg class="corruption-map" viewBox="0 0 1396 785" aria-hidden="true">
+          <defs>
+            <mask id="corruptionMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1396" height="785">
+              <rect width="1396" height="785" fill="#000"></rect>
+              <path id="corruptionClipPath" fill="#fff"></path>
+              <path id="corruptionClearingPath" fill="#000"></path>
+            </mask>
+            <filter id="corruptionDistortion" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.012 0.034"
+                numOctaves="3"
+                seed="9"
+                result="noise"
+              >
+                <animate
+                  attributeName="baseFrequency"
+                  values="0.012 0.034;0.018 0.046;0.011 0.032"
+                  dur="5.6s"
+                  repeatCount="indefinite"
+                />
+              </feTurbulence>
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="noise"
+                scale="16"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+          <g mask="url(#corruptionMask)">
+            <image
+              href="./assets/map/map_corrupted.png"
+              width="1396"
+              height="785"
+              preserveAspectRatio="none"
+              filter="url(#corruptionDistortion)"
+            ></image>
+          </g>
+          <path class="corruption-edge-glow" id="corruptionEdgeGlow"></path>
+          <path class="corruption-edge" id="corruptionEdge"></path>
+        </svg>
+        <div class="map-layer" id="mapLayer"></div>
+      </div>
+      <section class="battle-scene" id="battleScene" aria-label="战斗场景" hidden></section>
+      <section class="event-scene" id="eventScene" aria-label="事件场景" hidden></section>
+      <section class="shop-scene" id="shopScene" aria-label="图书馆" hidden></section>
+    </main>
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
