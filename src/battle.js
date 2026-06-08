@@ -295,7 +295,7 @@ export class BattleController {
       if (this.dragState) return;
       const card = event.target.closest(".battle-card");
       const nextIndex = card && this.hand.contains(card) ? Number(card.dataset.index) : null;
-      if (card) this.scheduleCardPerspective(card, event);
+      if (card && !this.areCardInteractionsReduced()) this.scheduleCardPerspective(card, event);
       if (this.discardChoice?.selectedId) {
         const selectedIndex = this.selectedDiscardIndex();
         if (this.handHoverIndex === selectedIndex) return;
@@ -479,7 +479,17 @@ export class BattleController {
     }
 
     const card = this.state.hand.find((item) => item.id === drag.cardId);
-    const valid = card && this.isValidDrop(card, event.clientX, event.clientY);
+    const finalTargetEnemyCard = card && this.requiresEnemyTarget(card)
+      ? this.enemyCardAtPoint(event.clientX, event.clientY)
+      : null;
+    if (finalTargetEnemyCard) {
+      drag.targetEnemyId = finalTargetEnemyCard.dataset.enemyId || null;
+    }
+    const valid = card && (
+      this.requiresEnemyTarget(card)
+        ? Boolean(finalTargetEnemyCard)
+        : this.isOutsidePlayArea(event.clientX, event.clientY)
+    );
     this.root.classList.remove("is-attack-targeted", "is-skill-targeted");
     this.clearEnemyTargets();
 
@@ -574,7 +584,23 @@ export class BattleController {
     drag.cardEl.innerHTML = renderBattleCardInner(card, { damageOverride, player: this.state.player });
   }
 
+  areCardInteractionsReduced() {
+    return Boolean(this.runState?.reducedEffects);
+  }
+
+  syncReducedEffects() {
+    if (!this.areCardInteractionsReduced()) return;
+    this.pendingPerspective = null;
+    if (this.cardPerspectiveFrame) {
+      cancelAnimationFrame(this.cardPerspectiveFrame);
+      this.cardPerspectiveFrame = 0;
+    }
+    this.resetCardPerspective();
+    this.layoutHand();
+  }
+
   scheduleCardPerspective(cardEl, event) {
+    if (this.areCardInteractionsReduced()) return;
     if (this.cardPerspectiveCard !== cardEl) {
       this.cardPerspectiveCard = cardEl;
       this.cardPerspectiveRect = null;
@@ -595,6 +621,7 @@ export class BattleController {
   }
 
   updateCardPerspective(cardEl, event) {
+    if (this.areCardInteractionsReduced()) return;
     const rect = this.cardPerspectiveCard === cardEl && this.cardPerspectiveRect
       ? this.cardPerspectiveRect
       : cardEl.getBoundingClientRect();

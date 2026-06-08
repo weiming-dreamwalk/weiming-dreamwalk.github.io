@@ -253,6 +253,10 @@ body.is-reduced-effects :where(
   mix-blend-mode: normal !important;
 }
 
+body.is-reduced-effects .battle-card::before {
+  opacity: 0 !important;
+}
+
 body.is-reduced-effects :where(
   .site-card.is-current,
   .site-card.is-available:not(.is-current),
@@ -2643,6 +2647,8 @@ body.is-reduced-effects :where(
 }
 
 .battle-card.has-card-refs.is-hovered .card-reference-tip,
+.pile-card-grid .pile-card-preview.has-card-refs:hover .card-reference-tip,
+.pile-card-grid .pile-card-preview.has-card-refs:focus-visible .card-reference-tip,
 .shop-scene .pile-card-preview.has-card-refs:hover .card-reference-tip,
 .shop-scene .pile-card-preview.has-card-refs:focus-visible .card-reference-tip,
 .shop-offer-card:hover .pile-card-preview.has-card-refs .card-reference-tip,
@@ -2900,6 +2906,15 @@ body.is-reduced-effects :where(
     drop-shadow(0 0 18px rgba(255, 235, 130, 0.72))
     drop-shadow(0 20px 28px rgba(255, 86, 112, 0.42))
     drop-shadow(0 38px 54px rgba(45, 18, 48, 0.28));
+}
+
+body.is-reduced-effects .battle-scene.is-attack-targeted .enemy-card.is-targeted {
+  outline: 3px solid rgba(102, 205, 255, 0.92);
+  outline-offset: 8px;
+  box-shadow:
+    0 0 0 5px rgba(255, 238, 146, 0.34),
+    0 0 24px rgba(87, 198, 255, 0.72),
+    0 0 42px rgba(255, 83, 128, 0.38);
 }
 
 .enemy-card-wrap.is-defeated {
@@ -3720,8 +3735,8 @@ body.is-reduced-effects :where(
 .battle-card-vibration-warning {
   position: absolute;
   left: calc(100% + 12px);
-  top: 34px;
-  z-index: 26;
+  top: 6px;
+  z-index: 320;
   width: 250px;
   display: grid;
   gap: 5px;
@@ -3745,8 +3760,8 @@ body.is-reduced-effects :where(
 .battle-card-awake-warning {
   position: absolute;
   left: calc(100% + 12px);
-  top: 34px;
-  z-index: 27;
+  top: 6px;
+  z-index: 320;
   width: 250px;
   display: grid;
   gap: 5px;
@@ -3886,6 +3901,21 @@ body.is-reduced-effects :where(
     rotateX(0deg)
     rotateY(0deg)
     scale(1);
+}
+
+body.is-reduced-effects .battle-hand > .battle-card:not(.is-dragging):not(.battle-card-fly) {
+  transform:
+    translate3d(var(--hand-x), var(--hand-y), 0)
+    rotateZ(var(--hand-rot))
+    scale(1);
+  transform-style: flat;
+}
+
+body.is-reduced-effects .battle-hand > .battle-card.is-hovered:not(.is-dragging):not(.battle-card-fly) {
+  transform:
+    translate3d(var(--hand-x), var(--hand-y), 0)
+    rotateZ(var(--hand-rot))
+    scale(1.12);
 }
 
 .battle-card.is-discard-selectable {
@@ -4078,7 +4108,13 @@ body.is-reduced-effects :where(
     transform 220ms cubic-bezier(0.18, 0.84, 0.22, 1);
 }
 
+.battle-card .battle-keyword-tip {
+  top: 168px;
+}
+
 .battle-card.has-summer.is-hovered .battle-keyword-tip,
+.pile-card-grid .pile-card-preview.has-summer:hover .battle-keyword-tip,
+.pile-card-grid .pile-card-preview.has-summer:focus-visible .battle-keyword-tip,
 .shop-scene .pile-card-preview.has-summer:hover .battle-keyword-tip,
 .shop-scene .pile-card-preview.has-summer:focus-visible .battle-keyword-tip,
 .shop-offer-card:hover .pile-card-preview.has-summer .battle-keyword-tip,
@@ -4128,6 +4164,12 @@ body.is-reduced-effects :where(
 .pile-card-grid .battle-keyword-tip,
 .shop-remove-grid .battle-keyword-tip {
   z-index: 340;
+}
+
+.pile-card-grid .pile-card-preview .battle-keyword-tip {
+  left: calc(100% + 4px);
+  right: auto;
+  top: 24px;
 }
 
 .shop-offer-card .card-reference-tip,
@@ -5382,6 +5424,12 @@ body.is-reduced-effects :where(
     right: 0;
     top: -70px;
     width: min(250px, 72vw);
+  }
+
+  .battle-card .battle-keyword-tip {
+    left: calc(100% - 8px);
+    right: auto;
+    top: 138px;
   }
 
   .pile {

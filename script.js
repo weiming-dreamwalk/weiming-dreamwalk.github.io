@@ -30,6 +30,7 @@ const createInitialRunState = ({ skipTutorial = false } = {}) => ({
   completedSites: ["site_17"],
   shopFlags: {},
   shopRemoveCost: 2,
+  reducedEffects: false,
   skipTutorial,
   player: {
     hp: 80,
@@ -62,6 +63,7 @@ const battle = new BattleController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    updateMapVisibilityForEffects();
   },
   onEnterShop: () => {
     shop.markBattleCompleted();
@@ -69,6 +71,7 @@ const battle = new BattleController({
     corruption.pauseIdle();
     transitioning = true;
     shop.start();
+    updateMapVisibilityForEffects();
   },
   onDefeatReturn: resetDream,
 });
@@ -80,6 +83,7 @@ const events = new EventController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    updateMapVisibilityForEffects();
   },
 });
 
@@ -90,6 +94,7 @@ const shop = new ShopController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    updateMapVisibilityForEffects();
   },
   onRestart: resetDream,
 });
@@ -125,9 +130,35 @@ function bindSettings() {
 
 function setReducedEffects(enabled) {
   document.body.classList.toggle("is-reduced-effects", enabled);
+  runState.reducedEffects = enabled;
   localStorage.setItem("weiming-reduced-effects", enabled ? "1" : "0");
-  if (!reducedEffectsToggle) return;
-  reducedEffectsToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+  reducedEffectsToggle?.setAttribute("aria-pressed", enabled ? "true" : "false");
+  syncReducedEffectsRuntime();
+}
+
+function isSceneOpen(scene) {
+  return Boolean(scene && !scene.hidden);
+}
+
+function updateMapVisibilityForEffects() {
+  if (!stage) return;
+  const hideMapBehindScene = runState.reducedEffects && (
+    isSceneOpen(battleScene) ||
+    isSceneOpen(eventScene) ||
+    isSceneOpen(shopScene)
+  );
+  stage.hidden = hideMapBehindScene;
+}
+
+function syncReducedEffectsRuntime() {
+  updateMapVisibilityForEffects();
+  battle?.syncReducedEffects?.();
+  if (isSceneOpen(battleScene) && battle?.state?.battleDef) {
+    battle.startBattleCorruption(battle.state.battleDef);
+  }
+  if (isSceneOpen(shopScene)) {
+    shop?.startCorruption?.();
+  }
 }
 
 function openSettings() {
@@ -152,6 +183,7 @@ function resetDream() {
     delete runState[key];
   });
   Object.assign(runState, createInitialRunState({ skipTutorial: true }));
+  runState.reducedEffects = document.body.classList.contains("is-reduced-effects");
   siteController.reset();
   renderMapRelics();
   corruption.setStep(siteController.getCorruptionStep());
@@ -159,6 +191,7 @@ function resetDream() {
   battleScene.hidden = true;
   eventScene.hidden = true;
   shopScene.hidden = true;
+  updateMapVisibilityForEffects();
   showTitlePage();
 }
 
@@ -280,6 +313,7 @@ function enterGameFromTitle() {
     if (!titleVisible) titlePage.hidden = true;
   }, 430);
   corruption.resumeIdle();
+  updateMapVisibilityForEffects();
   layout();
 }
 
@@ -290,6 +324,7 @@ async function handleSiteClick(clickedSite) {
     transitioning = true;
     corruption.pauseIdle();
     shop.start();
+    updateMapVisibilityForEffects();
     return;
   }
 
@@ -303,11 +338,13 @@ async function handleSiteClick(clickedSite) {
   if (clickedSite.battle) {
     corruption.pauseIdle();
     battle.start(clickedSite.battle);
+    updateMapVisibilityForEffects();
     return;
   }
   if (clickedSite.event) {
     corruption.pauseIdle();
     events.start(clickedSite.event);
+    updateMapVisibilityForEffects();
     return;
   }
   transitioning = false;
