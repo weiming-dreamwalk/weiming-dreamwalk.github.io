@@ -43,6 +43,228 @@ body {
   background: #f4eee8;
 }
 
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 5vw, 72px);
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 225, 142, 0.14), transparent 36%),
+    rgba(16, 5, 20, 0.62);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.settings-overlay[hidden] {
+  display: none;
+}
+
+.settings-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-panel {
+  width: min(520px, 88vw);
+  display: grid;
+  gap: 18px;
+  padding: 34px 38px 32px;
+  color: #fff0c4;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 239, 190, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(42, 17, 48, 0.96), rgba(25, 9, 32, 0.96));
+  border: 1px solid rgba(255, 228, 158, 0.42);
+  border-radius: 8px;
+  box-shadow:
+    0 24px 60px rgba(12, 3, 16, 0.48),
+    0 0 22px rgba(255, 214, 128, 0.12);
+  font-family: var(--content-font);
+  transform: translate3d(0, 12px, 0) scale(0.98);
+  transition: transform 180ms cubic-bezier(0.18, 0.84, 0.22, 1);
+}
+
+.settings-overlay.is-visible .settings-panel {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.settings-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-panel h2 {
+  margin: 0;
+  color: #ffe2a0;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(49, 21, 54, 0.74);
+}
+
+.settings-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 228, 158, 0.34);
+  border-radius: 50%;
+  color: #ffe2a0;
+  background: rgba(20, 7, 26, 0.38);
+  cursor: pointer;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.settings-row {
+  width: 100%;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(255, 228, 158, 0.34);
+  border-radius: 8px;
+  padding: 16px 18px;
+  color: #fff0c4;
+  background: rgba(255, 239, 196, 0.08);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-row span {
+  display: grid;
+  gap: 7px;
+}
+
+.settings-row strong {
+  color: #ffe2a0;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.settings-row em,
+.settings-panel p {
+  color: rgba(255, 240, 196, 0.76);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.settings-row i {
+  position: relative;
+  flex: 0 0 auto;
+  width: 62px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(20, 7, 26, 0.66);
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 158, 0.3);
+}
+
+.settings-row i::after {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  content: "";
+  background: #fff0c4;
+  transition: transform 160ms cubic-bezier(0.18, 0.84, 0.22, 1);
+}
+
+.settings-row[aria-pressed="true"] i {
+  background: linear-gradient(135deg, rgba(255, 225, 142, 0.94), rgba(159, 248, 232, 0.82));
+}
+
+.settings-row[aria-pressed="true"] i::after {
+  transform: translateX(28px);
+  background: #321538;
+}
+
+.settings-close:focus-visible,
+.settings-row:focus-visible {
+  outline: 2px solid rgba(255, 235, 154, 0.9);
+  outline-offset: 3px;
+}
+
+.settings-panel p {
+  margin: 0;
+  justify-self: end;
+}
+
+body.is-reduced-effects :where(
+  .title-logo,
+  .loading-panel,
+  .site-card,
+  .site-card img,
+  .flow-arrow-line,
+  .flow-arrow-shadow,
+  .event-choice,
+  .shop-bg,
+  .shop-offer-card,
+  .shop-deck-dialog,
+  .relic-token,
+  .relic-icon,
+  .battle-status-token,
+  .battle-status-icon,
+  .battle-bg,
+  .enemy-card,
+  .enemy-card::after,
+  .enemy-card.is-targeted,
+  .boss-coffin,
+  .player-hand,
+  .player-watch,
+  .watch-stat-tag,
+  .action-message-card,
+  .discard-choice-controls button,
+  .battle-card,
+  .battle-card::after,
+  .battle-card.is-special-active::after,
+  .battle-card.is-hovered.is-special-active::after,
+  .battle-card.is-twist-recorded::after,
+  .battle-card.is-discard-selected::after,
+  .battle-card-cost,
+  .battle-card-fly,
+  .card-shard .battle-card,
+  .battle-keyword-tip,
+  .card-reference-tip,
+  .pile,
+  .pile-overlay-dialog,
+  .battle-tutorial-card,
+  .battle-fail-dialog button,
+  .relic-choice,
+  .victory-action-choice
+) {
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+body.is-reduced-effects :where(
+  .battle-card::before,
+  .site-card::before,
+  .site-card::after
+) {
+  mix-blend-mode: normal !important;
+}
+
+body.is-reduced-effects :where(
+  .site-card.is-current,
+  .site-card.is-available:not(.is-current),
+  .battle-card.is-special-active::after,
+  .battle-card.is-twist-recorded::after,
+  .battle-scene.is-leg-shake .battle-hand,
+  .relic-token.is-triggering .relic-icon,
+  .battle-status-token.is-triggering .battle-status-icon
+) {
+  animation: none !important;
+}
+
 .loading-screen {
   position: fixed;
   inset: 0;
