@@ -844,7 +844,7 @@ body.is-reduced-effects :where(
 
 .event-choice-list {
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
 .event-choice {
@@ -854,11 +854,11 @@ body.is-reduced-effects :where(
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
-  gap: 6px;
+  gap: 4px;
   position: relative;
   border: 0;
   border-radius: 0;
-  padding: 34px 52px 38px;
+  padding: 26px 52px 28px;
   color: #321538;
   background: var(--choice-panel-bg) center / 100% 100% no-repeat;
   filter: drop-shadow(0 16px 26px rgba(24, 8, 24, 0.28));
@@ -5471,7 +5471,7 @@ body.is-reduced-effects .battle-hand > .battle-card.is-hovered:not(.is-dragging)
 
   .event-choice {
     grid-template-columns: 1fr;
-    padding: 36px 48px 42px 62px;
+    padding: 28px 48px 32px 62px;
   }
 
   .event-choice-card-refs {

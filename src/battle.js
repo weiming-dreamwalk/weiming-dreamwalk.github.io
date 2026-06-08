@@ -332,6 +332,10 @@ export class BattleController {
     });
 
     this.hand.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) {
+        event.preventDefault();
+        return;
+      }
       const cardEl = event.target.closest(".battle-card");
       if (this.discardChoice) {
         if (cardEl && this.hand.contains(cardEl)) this.selectDiscardChoice(cardEl.dataset.cardId);
@@ -340,6 +344,7 @@ export class BattleController {
       if (!cardEl || this.busy || this.state.finished) return;
       this.beginCardDrag(event, cardEl);
     });
+    this.hand.addEventListener("contextmenu", (event) => this.handleHandContextMenu(event));
 
     this.endTurnBtn.addEventListener("click", () => this.requestEndTurn());
     this.root.addEventListener("click", (event) => this.recoverEndTurnClick(event), true);
@@ -445,6 +450,10 @@ export class BattleController {
     const drag = this.dragState;
     if (!drag || event.pointerId !== drag.pointerId) return;
     event.preventDefault();
+    if (event.buttons !== 1) {
+      void this.cancelActiveCardDrag();
+      return;
+    }
 
     const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
     if (!drag.dragging && distance < DRAG_START_THRESHOLD) return;
@@ -466,6 +475,25 @@ export class BattleController {
     this.positionDraggedCard(event.clientX, event.clientY);
     this.updateDragTarget(event.clientX, event.clientY);
   };
+
+  handleHandContextMenu(event) {
+    if (!event.target.closest(".battle-card")) return;
+    event.preventDefault();
+    void this.cancelActiveCardDrag();
+  }
+
+  async cancelActiveCardDrag() {
+    const drag = this.dragState;
+    if (!drag) return;
+    this.detachDragListeners(drag);
+    this.root.classList.remove("is-attack-targeted", "is-skill-targeted");
+    this.clearEnemyTargets();
+    if (drag.dragging) {
+      await this.cancelCardDrag(drag);
+      return;
+    }
+    this.dragState = null;
+  }
 
   handleCardDragEnd = async (event) => {
     const drag = this.dragState;
@@ -595,6 +623,7 @@ export class BattleController {
       cancelAnimationFrame(this.cardPerspectiveFrame);
       this.cardPerspectiveFrame = 0;
     }
+    if (!this.hand) return;
     this.resetCardPerspective();
     this.layoutHand();
   }
@@ -643,6 +672,7 @@ export class BattleController {
   resetCardPerspective(scope = this.hand) {
     this.cardPerspectiveRect = null;
     this.cardPerspectiveCard = null;
+    if (!scope) return;
     scope.querySelectorAll(".battle-card").forEach((card) => {
       card.style.setProperty("--card-mx", "50%");
       card.style.setProperty("--card-my", "28%");
