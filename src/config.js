@@ -544,7 +544,7 @@ export const RELIC_DEFS = {
   },
   old_campus_card: {
     name: "旧校园卡",
-    text: "商店第一次刷新免费。",
+    text: "每次书架刷新后的第一次手动刷新免费。",
   },
   borrowed_umbrella: {
     name: "借来的伞",

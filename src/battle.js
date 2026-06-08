@@ -1700,7 +1700,7 @@ export class BattleController {
     const add = (value, label) => {
       if (value <= 0) return;
       amount += value;
-      reasons.push(`${label} +${value}`);
+      reasons.push(`原因：${label}`);
     };
 
     if (card.key === "retake") add(2, "打出重修");
@@ -2053,6 +2053,9 @@ export class BattleController {
       const x = (index - middle) * baseGap + sideShift;
       const rotation = hovered ? 0 : (index - middle) * 5.2;
       const y = hovered ? -72 : Math.abs(index - middle) * 5;
+      const tooltipLeft = index > middle || x > 120;
+      const hasMechanismWarning = card.classList.contains("has-vibration-warning")
+        || card.querySelector(".battle-card-awake-warning");
       const layoutKey = [
         Math.round(x * 10) / 10,
         Math.round(y * 10) / 10,
@@ -2069,6 +2072,8 @@ export class BattleController {
         card.style.zIndex = hovered ? "30" : String(10 + index);
         card.classList.toggle("is-hovered", hovered);
       }
+      card.classList.toggle("is-tooltip-left", tooltipLeft);
+      card.classList.toggle("has-mechanism-warning", Boolean(hasMechanismWarning));
       if (!hovered) {
         card.style.setProperty("--card-mx", "50%");
         card.style.setProperty("--card-my", "28%");
@@ -2781,6 +2786,25 @@ export class BattleController {
     this.animateCardsAddedToPile(addedCards, pileName);
   }
 
+  async addCardToHand(key, { label = "" } = {}) {
+    const card = this.makeBattleCard(key);
+    this.state.hand.push(card);
+    this.noteCardEnteredNonDiscard();
+    if (label) this.message.textContent = label;
+    if (!this.hand || this.state.finished) {
+      this.renderHand();
+      return card;
+    }
+    const cardEl = this.createAnimationCard(card);
+    await animateGeneratedCardToPile(cardEl, this.hand, 0, {
+      index: 0,
+      total: 1,
+      holdMs: 720,
+    });
+    this.renderHand();
+    return card;
+  }
+
   animateCardsAddedToPile(cards, pileName) {
     const targetEl = pileName === "drawPile" ? this.drawPile : pileName === "discardPile" ? this.discardPile : null;
     if (!targetEl || !cards.length || this.state.finished) return;
@@ -3425,8 +3449,8 @@ export class BattleController {
         this.state.player.networkWave = 1;
       }
       if (action.addHand && !this.state.player.nullifyEnemyThisTurn) {
-        this.state.hand.push(this.makeBattleCard(action.addHand));
-        this.noteCardEnteredNonDiscard();
+        const cardName = CARD_DEFS[action.addHand]?.name || "牌";
+        await this.addCardToHand(action.addHand, { label: `${cardName}进入手牌` });
       }
       if (action.mentalRecoveryPenaltyNext && !this.state.player.nullifyEnemyThisTurn) {
         this.state.player.mentalRecoveryPenaltyNext += action.mentalRecoveryPenaltyNext;
@@ -3443,8 +3467,8 @@ export class BattleController {
         this.addCardsToPile("discardPile", action.resonanceAddDiscard, 1);
       }
       if (this.state.player.legShakeResonance && action.resonanceAddHand && !this.state.player.nullifyEnemyThisTurn) {
-        this.state.hand.push(this.makeBattleCard(action.resonanceAddHand));
-        this.noteCardEnteredNonDiscard();
+        const cardName = CARD_DEFS[action.resonanceAddHand]?.name || "牌";
+        await this.addCardToHand(action.resonanceAddHand, { label: `${cardName}进入手牌` });
       }
       if (this.state.player.legShakeResonance && action.resonanceLoseMental && !this.state.player.nullifyEnemyThisTurn) {
         this.loseMental(action.resonanceLoseMental);

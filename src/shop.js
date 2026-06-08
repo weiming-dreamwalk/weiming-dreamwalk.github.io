@@ -347,6 +347,8 @@ export class ShopController {
   }
 
   generateFreshShelfState() {
+    this.runState.shopFlags ||= {};
+    this.runState.shopFlags.old_campus_card_refresh_used = false;
     this.runState.shopState.offers = [];
     this.runState.shopState.seenKeys = [];
     this.runState.shopState.needsRefresh = false;
