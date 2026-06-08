@@ -8,6 +8,22 @@
   </head>
   <body>
     <main class="game-shell" aria-label="选关地图">
+      <section class="settings-overlay" id="settingsOverlay" aria-label="设置" hidden>
+        <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+          <header>
+            <h2 id="settingsTitle">设置</h2>
+            <button class="settings-close" id="settingsClose" type="button" aria-label="关闭设置">×</button>
+          </header>
+          <button class="settings-row" id="reducedEffectsToggle" type="button" aria-pressed="false">
+            <span>
+              <strong>低特效模式</strong>
+              <em>关闭重阴影、发光滤镜和部分装饰动画。</em>
+            </span>
+            <i aria-hidden="true"></i>
+          </button>
+          <p>按 Esc 返回游戏</p>
+        </div>
+      </section>
       <section class="loading-screen is-visible" id="loadingScreen" aria-label="资源加载">
         <div class="loading-panel">
           <strong>未名游梦</strong>

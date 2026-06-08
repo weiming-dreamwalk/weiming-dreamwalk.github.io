@@ -36,7 +36,6 @@ export function battleTemplate(battleDef) {
       <div class="end-turn-wrap">
         <button class="battle-end-turn" id="battleEndTurn" type="button">结束回合</button>
         <button class="battle-debug-finish" id="battleDebugFinish" type="button">结束战斗</button>
-        <div class="end-turn-forecast" id="endTurnForecast"></div>
       </div>
     </div>
     <div class="awake-lesson-toast" id="awakeLessonToast" hidden></div>
@@ -218,7 +217,7 @@ function highlightCardText(text, { damageOverride = null } = {}) {
       let html = escapeHtml(line);
       if (damageOverride !== null) {
         html = html.replace(
-          /造成\s*\d+\s*点(?:基础)?伤害/,
+          /造成\s*\d+\s*(?:点\s*)?(?:基础)?\s*伤害/,
           `造成 <span class="effective-damage">${damageOverride} 伤害</span>`,
         );
       }
