@@ -16,6 +16,9 @@ const loadingText = document.querySelector("#loadingText");
 const loadingBar = document.querySelector("#loadingBar");
 const titlePage = document.querySelector("#titlePage");
 const titleEnter = document.querySelector("#titleEnter");
+const settingsOverlay = document.querySelector("#settingsOverlay");
+const settingsClose = document.querySelector("#settingsClose");
+const reducedEffectsToggle = document.querySelector("#reducedEffectsToggle");
 const battleScene = document.querySelector("#battleScene");
 const eventScene = document.querySelector("#eventScene");
 const shopScene = document.querySelector("#shopScene");
@@ -95,10 +98,53 @@ corruption.setStep(siteController.getCorruptionStep());
 corruption.pauseIdle();
 renderMapRelics();
 bindTitlePage();
+bindSettings();
 void boot();
 
 function renderMapRelics() {
   if (mapRelicMount) mapRelicMount.innerHTML = renderRelicBar(runState.relics);
+}
+
+function bindSettings() {
+  const stored = localStorage.getItem("weiming-reduced-effects") === "1";
+  setReducedEffects(stored);
+  reducedEffectsToggle?.addEventListener("click", () => {
+    setReducedEffects(!document.body.classList.contains("is-reduced-effects"));
+  });
+  settingsClose?.addEventListener("click", closeSettings);
+  settingsOverlay?.addEventListener("click", (event) => {
+    if (event.target === settingsOverlay) closeSettings();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    if (settingsOverlay?.hidden) openSettings();
+    else closeSettings();
+  });
+}
+
+function setReducedEffects(enabled) {
+  document.body.classList.toggle("is-reduced-effects", enabled);
+  localStorage.setItem("weiming-reduced-effects", enabled ? "1" : "0");
+  if (!reducedEffectsToggle) return;
+  reducedEffectsToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+}
+
+function openSettings() {
+  if (!settingsOverlay) return;
+  settingsOverlay.hidden = false;
+  requestAnimationFrame(() => {
+    settingsOverlay.classList.add("is-visible");
+    reducedEffectsToggle?.focus({ preventScroll: true });
+  });
+}
+
+function closeSettings() {
+  if (!settingsOverlay) return;
+  settingsOverlay.classList.remove("is-visible");
+  window.setTimeout(() => {
+    if (!settingsOverlay.classList.contains("is-visible")) settingsOverlay.hidden = true;
+  }, 180);
 }
 
 function resetDream() {
