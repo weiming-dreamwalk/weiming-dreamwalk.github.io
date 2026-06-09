@@ -187,8 +187,6 @@ export class ShopController {
     const cost = free ? 0 : this.refreshCost();
     if (this.runState.player.mental < cost) return;
     const previousMental = this.runState.player.mental;
-    if (markSkipped) this.runState.shopState.offers.forEach((offer) => this.runState.shopState.seenKeys.push(offer.key));
-    this.runState.shopState.seenKeys = [...new Set(this.runState.shopState.seenKeys)];
     this.runState.player.mental -= cost;
     if (!free && this.hasRelic("old_campus_card") && !this.runState.shopFlags.old_campus_card_refresh_used) {
       this.runState.shopFlags.old_campus_card_refresh_used = true;
@@ -199,8 +197,6 @@ export class ShopController {
       await wait(260);
     }
     this.runState.shopState.offers = this.drawShelf();
-    this.runState.shopState.offers.forEach((offer) => this.runState.shopState.seenKeys.push(offer.key));
-    this.runState.shopState.seenKeys = [...new Set(this.runState.shopState.seenKeys)];
     this.runState.shopState.needsRefresh = false;
     this.message.textContent = "书架将在下一场战斗后刷新";
     this.render();
@@ -241,7 +237,7 @@ export class ShopController {
   availableCards() {
     return Object.entries(SHOP_CARD_POOL)
       .flatMap(([rarity, cards]) => cards.map((card) => ({ ...card, rarity })))
-      .filter((card) => !this.runState.shopState.seenKeys.includes(card.key))
+      .filter((card) => card.rarity !== "rare" || !this.runState.shopState.boughtRareKeys.includes(card.key))
       .filter((card) => !card.unlockAfterSite || this.runState.completedSites?.includes(card.unlockAfterSite));
   }
 
@@ -256,6 +252,10 @@ export class ShopController {
     const previousMental = this.runState.player.mental;
     this.runState.player.mental -= offer.cost;
     this.runState.deckKeys.push(offer.key);
+    if (offer.rarity === "rare") {
+      this.runState.shopState.boughtRareKeys.push(offer.key);
+      this.runState.shopState.boughtRareKeys = [...new Set(this.runState.shopState.boughtRareKeys)];
+    }
     this.runState.shopState.offers = this.runState.shopState.offers.filter((item) => item.key !== key);
     this.message.textContent = `购买 ${CARD_DEFS[offer.key].name}`;
     this.render();
@@ -328,10 +328,12 @@ export class ShopController {
     this.runState.shopState ||= {
       offers: [],
       seenKeys: [],
+      boughtRareKeys: [],
       needsRefresh: true,
     };
     this.runState.shopState.offers ||= [];
     this.runState.shopState.seenKeys ||= [];
+    this.runState.shopState.boughtRareKeys ||= [];
     this.runState.shopState.needsRefresh ??= true;
   }
 
@@ -353,8 +355,6 @@ export class ShopController {
     this.runState.shopState.seenKeys = [];
     this.runState.shopState.needsRefresh = false;
     this.runState.shopState.offers = this.drawShelf();
-    this.runState.shopState.offers.forEach((offer) => this.runState.shopState.seenKeys.push(offer.key));
-    this.runState.shopState.seenKeys = [...new Set(this.runState.shopState.seenKeys)];
   }
 
   animateMentalChange(delta) {

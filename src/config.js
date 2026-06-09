@@ -341,7 +341,7 @@ export const CARD_DEFS = {
   insight: {
     name: "洞见",
     type: "skill",
-    cost: 0,
+    cost: 1,
     text: "获得 2 层随机增益。精神至少 8：改为 3 层。可能获得：力量 +1、敏捷 +1、或每回合抽牌 +1。",
     tags: ["保留", "消耗"],
     retain: true,
@@ -404,7 +404,8 @@ export const CARD_DEFS = {
     cost: 1,
     dynamicCost: "echo",
     text: "Boss 第一阶段：从灵柩中取回 1 张牌。Boss 完成回响转化后：费用 0，回复 1 精神。",
-    tags: [],
+    tags: ["消耗"],
+    exhaust: true,
   },
   toxin: {
     name: "毒素",
@@ -460,10 +461,9 @@ export const CARD_DEFS = {
     name: "塔影",
     type: "skill",
     cost: 0,
-    text: "从灵柩中取回 1 张牌。若灵柩为空，获得 12 防御。",
-    tags: ["保留", "消耗"],
+    text: "从灵柩中取回 1 张牌。",
+    tags: ["保留"],
     retain: true,
-    exhaust: true,
   },
   todo: {
     name: "待完成",
@@ -634,8 +634,8 @@ export const EVENT_DEFS = {
     text: "你走进大礼堂。来自台上的声音被扩音器拉得狭长，像一张挤入门缝中的、修饰过度的简历。每个人都在等待一个宏大的答案。",
     choices: [
       { label: "坐在最后一排", detail: "回复 20 生命与 3 精神", effects: [{ type: "gainHp", amount: 20 }, { type: "gainMental", amount: 3 }] },
-      { label: "认真听完", detail: "回复 8 生命，获得 1 张洞见", effects: [{ type: "gainHp", amount: 8 }, { type: "addCard", key: "insight" }] },
-      { label: "讲的什么玩意？", detail: "获得 1 张弯道超车", effects: [{ type: "addCard", key: "overtake" }] },
+      { label: "认真听完", detail: "获得 1 张弯道超车", effects: [{ type: "addCard", key: "overtake" }] },
+      { label: "讲的什么玩意？", detail: "回复 8 生命，获得 1 张 1/10", effects: [{ type: "gainHp", amount: 8 }, { type: "addCard", key: "one_tenth" }] },
     ],
   },
   event_85km: {
@@ -656,7 +656,7 @@ export const EVENT_DEFS = {
     choices: [
       { label: "休息", detail: "回复 30 生命和 1 精神。下场战斗开局获得 6 防御。", effects: [{ type: "gainHp", amount: 30 }, { type: "gainMental", amount: 1 }, { type: "gainNextBattleBlock", amount: 6 }] },
       { label: "整理书包", detail: "删除至多 2 张牌，回复 2 精神", effects: [{ type: "removeUpToCards", count: 2 }, { type: "gainMental", amount: 2 }] },
-      { label: "凝望塔影", detail: "获得 1 张塔影。失去 8 生命，最大精神 -1。", effects: [{ type: "addCard", key: "tower_shadow" }, { type: "loseHp", amount: 8 }, { type: "loseMaxMental", amount: 1 }] },
+      { label: "凝望塔影", detail: "获得 1 张塔影。最大精神 -1。", effects: [{ type: "addCard", key: "tower_shadow" }, { type: "loseMaxMental", amount: 1 }] },
       { label: "靠着塔睡着", detail: "回复所有生命，但失去所有精神。获得 1 张焦虑", effects: [{ type: "healFull" }, { type: "loseAllMental" }, { type: "addCard", key: "anxiety" }] },
     ],
   },

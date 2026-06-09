@@ -261,7 +261,6 @@ body.is-reduced-effects :where(
   .site-card.is-available:not(.is-current),
   .battle-card.is-special-active::after,
   .battle-card.is-twist-recorded::after,
-  .battle-scene.is-leg-shake .battle-hand,
   .relic-token.is-triggering .relic-icon,
   .battle-status-token.is-triggering .battle-status-icon
 ) {
@@ -5275,13 +5274,13 @@ body.is-reduced-effects .battle-hand > .battle-card.is-hovered:not(.is-dragging)
 
 @keyframes hand-vibration {
   0% {
-    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * -0.45px), calc(var(--vibration-intensity, 0) * 0.18px), 0);
+    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * -0.675px), calc(var(--vibration-intensity, 0) * 0.27px), 0);
   }
   50% {
-    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * 0.42px), calc(var(--vibration-intensity, 0) * -0.16px), 0);
+    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * 0.63px), calc(var(--vibration-intensity, 0) * -0.24px), 0);
   }
   100% {
-    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * -0.22px), calc(var(--vibration-intensity, 0) * 0.12px), 0);
+    transform: translateX(-50%) translate3d(calc(var(--vibration-intensity, 0) * -0.33px), calc(var(--vibration-intensity, 0) * 0.18px), 0);
   }
 }
 

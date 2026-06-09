@@ -58,12 +58,6 @@ const CHECKIN_SUCCESS_MESSAGES = [
 ];
 const BASIC_SCAN_CONDITIONS = [
   {
-    id: "played_attack",
-    label: "打出攻击",
-    description: "本回合打出至少 1 张攻击牌。",
-    test: ({ player }) => player.attacksPlayedThisTurn >= 1,
-  },
-  {
     id: "block_10",
     label: "防御 10+",
     description: "本回合获得至少 10 防御。",
@@ -74,6 +68,7 @@ const BASIC_SCAN_CONDITIONS = [
     label: "精神 5-8",
     description: "回合结束时，精神为 5-8。",
     endOnly: true,
+    conflicts: ["mental_below_5", "mental_exact_6"],
     test: ({ player }) => player.mental >= 5 && player.mental <= 8,
   },
   {
@@ -107,6 +102,7 @@ const BASIC_SCAN_CONDITIONS = [
     label: "低精神",
     description: "回合结束时，精神低于 5。",
     endOnly: true,
+    conflicts: ["mental_5_8", "mental_exact_6"],
     test: ({ player }) => player.mental < 5,
   },
 ];
@@ -116,6 +112,7 @@ const ADVANCED_SCAN_CONDITIONS = [
     label: "精神正好 6",
     description: "回合结束时，精神正好为 6。",
     endOnly: true,
+    conflicts: ["mental_5_8", "mental_below_5"],
     test: ({ player }) => player.mental === 6,
   },
   {
@@ -2650,8 +2647,7 @@ export class BattleController {
       if (this.isCoffinBoss() && this.state.boss.coffin.length) {
         await this.promptCoffinRetrieve({ title: "塔影：从灵柩中取回 1 张牌" });
       } else {
-        this.gainBlock(12);
-        this.message.textContent = "塔影：灵柩为空，获得 12 防御";
+        this.message.textContent = "塔影：灵柩里没有回应";
       }
       return;
     }
