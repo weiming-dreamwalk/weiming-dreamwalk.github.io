@@ -20,6 +20,7 @@ export class SiteController {
     this.cards = new Map();
     this.arrows = [];
     this.onSiteClick = onSiteClick;
+    this.interactionLocked = false;
 
     this.renderArrows();
     this.render();
@@ -79,7 +80,12 @@ export class SiteController {
       card.addEventListener("pointerenter", (event) => this.hoverSite(event));
       card.addEventListener("pointermove", (event) => this.tiltSite(event));
       card.addEventListener("pointerleave", (event) => this.resetSite(event));
-      card.addEventListener("click", () => this.onSiteClick(site));
+      card.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (card.disabled || !this.canSelect(site)) return;
+        this.onSiteClick(site);
+      });
 
       this.layer.append(card);
       this.cards.set(site.id, card);
@@ -97,8 +103,14 @@ export class SiteController {
   }
 
   canSelect(site) {
+    if (this.interactionLocked) return false;
     if (site.shop) return this.isShopUnlocked(site);
     return this.getNextSequenceSite()?.id === site.id;
+  }
+
+  setInteractionLocked(locked) {
+    this.interactionLocked = Boolean(locked);
+    this.updateAvailability();
   }
 
   getCorruptionStep() {
@@ -142,9 +154,11 @@ export class SiteController {
       const card = this.cards.get(site.id);
       if (!card) return;
 
-      const selectable = site.shop
-        ? this.isShopUnlocked(site)
-        : (!site.corrupted && nextSite?.id === site.id);
+      const selectable = !this.interactionLocked && (
+        site.shop
+          ? this.isShopUnlocked(site)
+          : (!site.corrupted && nextSite?.id === site.id)
+      );
 
       card.disabled = !selectable || site.corrupted;
       card.classList.toggle("is-shop", Boolean(site.shop));

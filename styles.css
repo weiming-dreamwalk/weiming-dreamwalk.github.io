@@ -445,6 +445,10 @@ body.is-reduced-effects :where(
   contain: layout paint style;
 }
 
+.map-stage.is-transition-locked {
+  pointer-events: none;
+}
+
 .map-relic-mount {
   position: absolute;
   z-index: 80;
@@ -4831,6 +4835,11 @@ body.is-reduced-effects .battle-hand > .battle-card.is-hovered:not(.is-dragging)
   margin: 0 auto;
 }
 
+.relic-choice-grid.is-victory-actions:has(.victory-action-choice:only-child) {
+  grid-template-columns: minmax(180px, 260px);
+  justify-content: center;
+}
+
 .victory-action-bar {
   display: grid;
   grid-template-columns: repeat(2, minmax(180px, 1fr));
@@ -4844,6 +4853,11 @@ body.is-reduced-effects .battle-hand > .battle-card.is-hovered:not(.is-dragging)
     opacity 180ms ease,
     filter 180ms ease,
     transform 220ms cubic-bezier(0.18, 0.84, 0.22, 1);
+}
+
+.victory-action-bar:has(.victory-action-choice:only-child) {
+  grid-template-columns: minmax(180px, 260px);
+  justify-content: center;
 }
 
 .victory-action-bar[hidden] {

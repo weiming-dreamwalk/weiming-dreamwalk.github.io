@@ -3603,15 +3603,16 @@ export class BattleController {
     this.stopBattleCorruption();
     this.root.classList.add("battle-victory-reward");
     const hasCardRewards = Boolean(this.state.battleDef?.rewardCards?.length);
+    const victoryActions = this.isEarlyMorning() ? ["shop"] : ["shop", "map"];
     let nextAction = "map";
     if (this.state.battleDef?.rewardPool?.length) {
-      nextAction = await this.showRelicChoice(this.state.battleDef.rewardPool, { withVictoryActions: !hasCardRewards });
+      nextAction = await this.showRelicChoice(this.state.battleDef.rewardPool, { withVictoryActions: !hasCardRewards, victoryActions });
     }
     if (this.state.battleDef?.rewardCards?.length) {
-      nextAction = await this.showCardRewardChoice(this.state.battleDef.rewardCards, { withVictoryActions: true });
+      nextAction = await this.showCardRewardChoice(this.state.battleDef.rewardCards, { withVictoryActions: true, victoryActions });
     }
     if (!this.state.battleDef?.rewardPool?.length && !this.state.battleDef?.rewardCards?.length) {
-      nextAction = await this.showVictoryActions();
+      nextAction = await this.showVictoryActions({ actions: victoryActions });
     }
     this.renderAll();
     this.syncRunStatePlayer();
@@ -3686,15 +3687,15 @@ export class BattleController {
     this.runState.player.maxMental = player.maxMental + (this.state.relicFlags?.graduate_list_maxMentalPenalty || 0);
   }
 
-  showRelicChoice(pool, { withVictoryActions = false } = {}) {
+  showRelicChoice(pool, { withVictoryActions = false, victoryActions = ["shop", "map"] } = {}) {
     if (!this.relicOverlay || !this.relicChoiceGrid) return Promise.resolve();
     const choices = shuffle(pool.filter((key) => !this.runState.relics.includes(key))).slice(0, 3);
     if (!choices.length) {
-      return withVictoryActions ? this.showVictoryActions() : Promise.resolve();
+      return withVictoryActions ? this.showVictoryActions({ actions: victoryActions }) : Promise.resolve();
     }
     const title = this.relicOverlay.querySelector("h2");
     if (title) title.textContent = "选择遗物";
-    const actionBar = withVictoryActions ? this.prepareVictoryActionBar(true) : null;
+    const actionBar = withVictoryActions ? this.prepareVictoryActionBar(true, { actions: victoryActions }) : null;
     if (!withVictoryActions) this.cleanupVictoryActionBar(this.currentVictoryActionBar());
 
     this.relicChoiceGrid.classList.remove("is-victory-actions", "is-reward-cleared");
@@ -3752,15 +3753,15 @@ export class BattleController {
     });
   }
 
-  showCardRewardChoice(pool, { withVictoryActions = false } = {}) {
+  showCardRewardChoice(pool, { withVictoryActions = false, victoryActions = ["shop", "map"] } = {}) {
     if (!this.relicOverlay || !this.relicChoiceGrid) return Promise.resolve();
     const choices = shuffle(pool.filter((key) => CARD_DEFS[key])).slice(0, 3);
     if (!choices.length) {
-      return withVictoryActions ? this.showVictoryActions() : Promise.resolve();
+      return withVictoryActions ? this.showVictoryActions({ actions: victoryActions }) : Promise.resolve();
     }
     const title = this.relicOverlay.querySelector("h2");
     if (title) title.textContent = "选择一张牌";
-    const actionBar = withVictoryActions ? this.prepareVictoryActionBar(true) : null;
+    const actionBar = withVictoryActions ? this.prepareVictoryActionBar(true, { actions: victoryActions }) : null;
     if (!withVictoryActions) this.cleanupVictoryActionBar(this.currentVictoryActionBar());
 
     this.relicChoiceGrid.classList.remove("is-victory-actions", "is-reward-cleared");
@@ -3814,16 +3815,13 @@ export class BattleController {
     });
   }
 
-  showVictoryActions() {
+  showVictoryActions({ actions = ["shop", "map"] } = {}) {
     if (!this.relicOverlay || !this.relicChoiceGrid) return Promise.resolve("map");
     const title = this.relicOverlay.querySelector("h2");
     if (title) title.textContent = "战斗胜利";
 
     this.relicChoiceGrid.classList.add("is-victory-actions");
-    this.relicChoiceGrid.innerHTML = `
-      <button class="victory-action-choice" type="button" data-victory-action="shop">进入图书馆</button>
-      <button class="victory-action-choice" type="button" data-victory-action="map">返回主界面</button>
-    `;
+    this.relicChoiceGrid.innerHTML = this.renderVictoryActionButtons(actions);
     this.relicOverlay.hidden = false;
     requestAnimationFrame(() => this.relicOverlay.classList.add("is-visible"));
 
@@ -3845,7 +3843,7 @@ export class BattleController {
     });
   }
 
-  prepareVictoryActionBar(disabled = true) {
+  prepareVictoryActionBar(disabled = true, { actions = ["shop", "map"] } = {}) {
     if (!this.relicChoiceGrid) return null;
     const dialog = this.relicChoiceGrid.closest(".relic-dialog");
     if (!dialog) return null;
@@ -3857,12 +3855,20 @@ export class BattleController {
       this.relicChoiceGrid.insertAdjacentElement("afterend", actionBar);
     }
     actionBar.hidden = false;
-    actionBar.innerHTML = `
-      <button class="victory-action-choice" type="button" data-victory-action="shop">进入图书馆</button>
-      <button class="victory-action-choice" type="button" data-victory-action="map">返回主界面</button>
-    `;
+    actionBar.innerHTML = this.renderVictoryActionButtons(actions);
     this.setVictoryActionButtonsEnabled(actionBar, !disabled);
     return actionBar;
+  }
+
+  renderVictoryActionButtons(actions = ["shop", "map"]) {
+    const labels = {
+      shop: "进入图书馆",
+      map: "返回主界面",
+    };
+    return actions
+      .filter((action) => labels[action])
+      .map((action) => `<button class="victory-action-choice" type="button" data-victory-action="${action}">${labels[action]}</button>`)
+      .join("");
   }
 
   currentVictoryActionBar() {

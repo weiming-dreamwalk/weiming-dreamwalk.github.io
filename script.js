@@ -23,6 +23,7 @@ const battleScene = document.querySelector("#battleScene");
 const eventScene = document.querySelector("#eventScene");
 const shopScene = document.querySelector("#shopScene");
 let transitioning = false;
+let pendingSiteId = null;
 let titleVisible = false;
 const createInitialRunState = ({ skipTutorial = false } = {}) => ({
   deckKeys: [...STARTER_DECK_KEYS],
@@ -63,6 +64,8 @@ const battle = new BattleController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    pendingSiteId = null;
+    setMapInteractionLocked(false);
     updateMapVisibilityForEffects();
   },
   onEnterShop: () => {
@@ -70,6 +73,8 @@ const battle = new BattleController({
     renderMapRelics();
     corruption.pauseIdle();
     transitioning = true;
+    pendingSiteId = "site_01";
+    setMapInteractionLocked(true);
     shop.start();
     updateMapVisibilityForEffects();
   },
@@ -83,6 +88,8 @@ const events = new EventController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    pendingSiteId = null;
+    setMapInteractionLocked(false);
     updateMapVisibilityForEffects();
   },
 });
@@ -94,6 +101,8 @@ const shop = new ShopController({
     renderMapRelics();
     corruption.resumeIdle();
     transitioning = false;
+    pendingSiteId = null;
+    setMapInteractionLocked(false);
     updateMapVisibilityForEffects();
   },
   onRestart: resetDream,
@@ -108,6 +117,13 @@ void boot();
 
 function renderMapRelics() {
   if (mapRelicMount) mapRelicMount.innerHTML = renderRelicBar(runState.relics);
+}
+
+function setMapInteractionLocked(locked) {
+  const isLocked = Boolean(locked);
+  siteController.setInteractionLocked(isLocked);
+  stage?.classList.toggle("is-transition-locked", isLocked);
+  stage?.setAttribute("aria-busy", isLocked ? "true" : "false");
 }
 
 function bindSettings() {
@@ -185,9 +201,11 @@ function resetDream() {
   Object.assign(runState, createInitialRunState({ skipTutorial: true }));
   runState.reducedEffects = document.body.classList.contains("is-reduced-effects");
   siteController.reset();
+  setMapInteractionLocked(false);
   renderMapRelics();
   corruption.setStep(siteController.getCorruptionStep());
   transitioning = false;
+  pendingSiteId = null;
   battleScene.hidden = true;
   eventScene.hidden = true;
   shopScene.hidden = true;
@@ -318,10 +336,13 @@ function enterGameFromTitle() {
 }
 
 async function handleSiteClick(clickedSite) {
-  if (transitioning || titleVisible) return;
+  if (transitioning || pendingSiteId || titleVisible) return;
   if (!siteController.canSelect(clickedSite)) return;
+  const targetSiteId = clickedSite.id;
   if (clickedSite.shop) {
     transitioning = true;
+    pendingSiteId = targetSiteId;
+    setMapInteractionLocked(true);
     corruption.pauseIdle();
     shop.start();
     updateMapVisibilityForEffects();
@@ -329,12 +350,26 @@ async function handleSiteClick(clickedSite) {
   }
 
   const nextSite = siteController.getNextSequenceSite();
-  if (!nextSite || clickedSite.id !== nextSite.id) return;
+  if (!nextSite || targetSiteId !== nextSite.id) return;
 
   transitioning = true;
-  await corruption.expandToStep(nextSite.sequence);
-  siteController.markCorrupted(nextSite.id);
-  if (!runState.completedSites.includes(nextSite.id)) runState.completedSites.push(nextSite.id);
+  pendingSiteId = targetSiteId;
+  setMapInteractionLocked(true);
+  try {
+    await corruption.expandToStep(nextSite.sequence);
+  } catch (error) {
+    console.warn("污染扩散动画中断。", error);
+    if (pendingSiteId === targetSiteId) {
+      transitioning = false;
+      pendingSiteId = null;
+      setMapInteractionLocked(false);
+    }
+    return;
+  }
+
+  if (pendingSiteId !== targetSiteId) return;
+  siteController.markCorrupted(targetSiteId);
+  if (!runState.completedSites.includes(targetSiteId)) runState.completedSites.push(targetSiteId);
   if (clickedSite.battle) {
     corruption.pauseIdle();
     battle.start(clickedSite.battle);
@@ -348,6 +383,8 @@ async function handleSiteClick(clickedSite) {
     return;
   }
   transitioning = false;
+  pendingSiteId = null;
+  setMapInteractionLocked(false);
 }
 
 function layout() {
