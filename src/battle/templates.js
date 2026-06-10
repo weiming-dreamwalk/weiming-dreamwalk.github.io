@@ -189,8 +189,9 @@ export function renderBattleCardInner(card, options = {}) {
 export function renderPileCard(card, options = {}) {
   const def = cardDef(card);
   const refs = cardReferenceKeys(card);
+  const extraClass = options.extraClass ? ` ${options.extraClass}` : "";
   return `
-    <article class="battle-card pile-card-preview ${def.type}${hasSummerText(def) ? " has-summer" : ""}${refs.length ? " has-card-refs" : ""}">
+    <article class="battle-card pile-card-preview ${def.type}${hasSummerText(def) ? " has-summer" : ""}${refs.length ? " has-card-refs" : ""}${extraClass}">
       ${renderBattleCardInner(card, options)}
     </article>
   `;

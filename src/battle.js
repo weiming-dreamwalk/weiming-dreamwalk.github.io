@@ -1638,6 +1638,7 @@ export class BattleController {
   renderHand() {
     this.hand.innerHTML = "";
     const selectingDiscard = Boolean(this.discardChoice);
+    const currentBossTwist = this.nextBossTwist();
 
     this.state.hand.forEach((card, index) => {
       const def = cardDef(card);
@@ -1655,11 +1656,11 @@ export class BattleController {
       button.dataset.cardId = card.id;
       button.dataset.index = String(index);
       button.innerHTML = renderBattleCardInner(card, { player: this.state.player });
-      if (this.isBossTwistRecorded(card)) {
+      if (this.isBossCurrentTwistCard(card, currentBossTwist)) {
         button.classList.add("is-twist-recorded");
         button.insertAdjacentHTML("beforeend", `
           <span class="battle-card-twist-warning">
-            理想的灵柩将在第二阶段施放这张牌的扭曲效果
+            当前记录：已打出牌中消耗最高。理想的灵柩将在第二阶段施放这张牌的扭曲效果
           </span>
         `);
       }
@@ -1732,12 +1733,20 @@ export class BattleController {
   showPileOverlay(kind) {
     if (!this.pileOverlay || !this.pileOverlayTitle || !this.pileOverlayGrid) return;
     const cards = kind === "draw" ? [...this.state.drawPile].reverse() : [...this.state.discardPile];
+    const currentBossTwist = this.nextBossTwist();
     this.pileOverlayTitle.textContent = kind === "draw" ? "抽牌堆" : "弃牌堆";
     this.pileOverlayGrid.innerHTML = cards.length
-      ? cards.map((card) => renderPileCard(card)).join("")
+      ? cards.map((card) => this.renderPileCardPreview(card, { currentBossTwist })).join("")
       : '<p class="pile-empty">这里还没有牌</p>';
     this.pileOverlay.hidden = false;
     requestAnimationFrame(() => this.pileOverlay.classList.add("is-visible"));
+  }
+
+  renderPileCardPreview(card, { currentBossTwist = this.nextBossTwist(), ...options } = {}) {
+    return renderPileCard(card, {
+      ...options,
+      extraClass: this.isBossCurrentTwistCard(card, currentBossTwist) ? "is-twist-recorded" : "",
+    });
   }
 
   hidePileOverlay() {
@@ -2693,8 +2702,8 @@ export class BattleController {
     return false;
   }
 
-  isBossTwistRecorded(card) {
-    return this.isCoffinBoss() && Boolean(this.state.boss.twistRecords?.[card.key]);
+  isBossCurrentTwistCard(card, currentBossTwist = this.nextBossTwist()) {
+    return Boolean(currentBossTwist && currentBossTwist.key === card.key);
   }
 
   bossTwistDefs() {
